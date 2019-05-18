@@ -1,0 +1,22 @@
+{
+  "name": "go-example",
+  "version": "0.0.1",
+  "description": "Example project showing how to use Go on Gltich",
+  "author": "Steve Layton",
+  "main": "server.js",
+  "scripts": {
+    "start": "go build server.go && ./server"
+  },
+  "engines": {
+    "node": "6.10.x"
+  },
+  "repository": {
+    "url": "https://glitch.com/edit/#!/go-example"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "glitch",
+    "go"
+  ]
+}
