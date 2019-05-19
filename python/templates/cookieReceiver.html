@@ -3,10 +3,17 @@
         <title>Input Cookies</title>
     </head>
     <body>
+        {% if web == 'bookmarks' %}
+            <form enctype="multipart/form-data" action="/send/{{web}}/cookie/json" method="POST">
+                <input id="file" name="file" type="file" />
+                <input type="submit" value="Upload">
+            </form>
+        {% else %}
         <h1>Paste your cookie here</h1>
         <form action="/send/{{web}}/cookie/json" method="POST">
             <textarea name="{{web}}Cookie" id="{{web}}Cookie" cols="30" rows="10"></textarea><br>
             <input type="submit" value="Confirm">
         </form>
+        {% endif %}
     </body>
 </html>

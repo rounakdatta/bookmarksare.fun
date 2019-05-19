@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, flash, redirect, session, abort, url_for
+from flask import Flask, render_template, request, send_file, flash, redirect, session, abort, url_for, jsonify
 import json
 import requests
 from bs4 import BeautifulSoup
@@ -164,6 +164,29 @@ def sentGistStarsCookieJson():
     print(gistStarsArray)
     
     return 'gistStarsProcessed'
+
+@app.route('/send/bookmarks/cookie/json', methods=['GET', 'POST'])
+def sentBookmarksCookieJson():
+    if request.method == 'GET':
+        return render_template('cookieReceiver.html', web='bookmarks')
+
+    retrievalStatus = False
+    processingStatus = False
+
+    try:
+        bookmarkFile = request.files['file']
+        retrievalStatus = True
+    except Exception as e:
+        retrievalStatus = e
+
+    try:
+        bookmarkSoup = BeautifulSoup(bookmarkFile.read(), features='html.parser')
+        allBookmarks = bookmarkSoup.find_all("a")
+        processingStatus = True
+    except Exception as e:
+        processingStatus = e
+    
+    return jsonify({"retrival": retrievalStatus, "processing": processingStatus})
 
 if __name__ == '__main__':
     app.run(port=1234, debug=True)
