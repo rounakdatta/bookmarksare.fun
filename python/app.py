@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, send_file, flash, redirect, session, abort, url_for
 import json
 import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
@@ -9,7 +10,6 @@ def cookieParser(cookieJsonArray=[]):
     for item in cookieJsonArray:
         cookies += item['name'] + "=" + item['value'] + "; "
     
-    print(cookies)
     return cookies
 
 def headersConstructor(cookies="", extraParams={}):
@@ -96,6 +96,74 @@ def sentPocketCookieJson():
     print(pocketBookmarksResultsJson.text)
     
     return 'pocketProcessed'
+
+@app.route('/send/githubStars/cookie/json', methods=['GET', 'POST'])
+def sentGithubStarsCookieJson():
+    if request.method == 'GET':
+        return render_template('cookieReceiver.html', web='githubStars')
+
+    githubStarsUsername = request.form['githubStarsCookie']
+    githubStarsHeaderDict = headersConstructor(extraParams={
+        'Accept': "*/*",
+        'Host': "api.github.com",
+        'Connection': "keep-alive"
+    })
+
+    githubStarsPrivateBookmarksUrl = "https://api.github.com/users/{}/starred".format(githubStarsUsername)
+
+    githubStarsJsonArray = []
+
+    githubStarPageCounter = 1
+    while True:
+        githubStarsPayload = {"page": githubStarPageCounter}
+        githubStarsBookmarksResultsJson = requests.request("GET", githubStarsPrivateBookmarksUrl, params=githubStarsPayload, headers=githubStarsHeaderDict)
+
+        payloadJsonArray = json.loads(githubStarsBookmarksResultsJson.text)
+        if payloadJsonArray == []:
+            break
+        
+        for jsonItem in payloadJsonArray:
+            githubStarsJsonArray.append(jsonItem)
+        githubStarPageCounter += 1
+
+    print(githubStarsJsonArray)
+    
+    return 'githubStarsProcessed'
+
+@app.route('/send/gistStars/cookie/json', methods=['GET', 'POST'])
+def sentGistStarsCookieJson():
+    if request.method == 'GET':
+        return render_template('cookieReceiver.html', web='gistStars')
+
+    gistStarsUsername = request.form['gistStarsCookie']
+    gistStarsHeaderDict = headersConstructor(extraParams={
+        'Accept': "*/*",
+        'Host': "gist.github.com",
+        'Connection': "keep-alive"
+    })
+
+    gistStarsPrivateBookmarksUrl = "https://gist.github.com/{}/starred".format(gistStarsUsername)
+
+    gistStarsArray = []
+
+    gistStarsPageCounter = 1
+    while True:
+        gistStarsPayload = {"page": gistStarsPageCounter}
+        gistStarsBookmarksResultsJson = requests.request("GET", gistStarsPrivateBookmarksUrl, params=gistStarsPayload, headers=gistStarsHeaderDict)
+
+        payloadSoup = BeautifulSoup(gistStarsBookmarksResultsJson.text, features="html.parser")
+        allGists = payloadSoup.find_all("a", class_="link-overlay")
+        
+        if allGists == []:
+            break
+
+        for gist in allGists:
+            gistStarsArray.append(gist)
+        gistStarsPageCounter += 1
+
+    print(gistStarsArray)
+    
+    return 'gistStarsProcessed'
 
 if __name__ == '__main__':
     app.run(port=1234, debug=True)
